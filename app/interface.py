@@ -1,6 +1,15 @@
+import sys
+import os
+
+# Adiciona a raiz do projeto no sys.path
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
 import streamlit as st
 import matplotlib.pyplot as plt
 import numpy as np
+
+
+
 
 from app.fuzzy_engine import inferir_dieta, calcular_tmb
 from app.recommender import recomendar_alimentos
