@@ -1,14 +1,9 @@
-# Python venv
 .venv/
 venv/
 env/
 
-# Compilados
 __pycache__/
 *.pyc
 
-# Banco local
-data/*.db
-
-# Configs do sistema
 .DS_Store
+.devcontainer/
