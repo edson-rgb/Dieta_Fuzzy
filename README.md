@@ -1,189 +1,163 @@
-# 🥗 Sistema Especialista Fuzzy para Recomendação de Dieta
-Este projeto implementa um **sistema especialista baseado em lógica fuzzy** para recomendar dietas personalizadas com base em:
 
-- **IMC**
-- **Nível de atividade física**
-- **Esforço percebido (RPE)**
-- **Taxa de Metabolismo Basal (TMB) – fórmula Harris–Benedict**
-- **Ajuste calórico automático (+200, -200 ou manutenção)**
-- **Recomendação de cardápio** baseada em alimentos cadastrados em um banco SQLite
+# 🥗 Sistema Especialista para Recomendação de Dieta com IA
 
-A interface é criada com **Streamlit**, permitindo visualização intuitiva das funções de pertinência e do cardápio recomendado.
+Este projeto implementa um **sistema especialista híbrido** para recomendação de dietas personalizadas, combinando **Lógica Fuzzy**, **Regras de Decisão**, **Cálculo de TMB** e um **banco de dados de alimentos**.
 
----
+## 🚀 Funcionalidades Principais
 
-# 📂 Estrutura do Projeto
+- **Entrada do usuário**: Peso, altura, idade, sexo, nível de atividade e esforço percebido.
+- **Cálculo de IMC** (Índice de Massa Corporal), com classificação automática.
+- **Lógica Fuzzy** para interpretar a intensidade do estilo de vida com base em:
+  - Nível de atividade física
+  - Esforço percebido (RPE)
+- **Algoritmo de decisão determinístico** para recomendar o tipo de dieta (hipocalórica, balanceada ou hipercalórica), com base em:
+  - IMC
+  - Intensidade fuzzy
+- **Cálculo da TMB** (Taxa Metabólica Basal), ajustado pelo fator de atividade.
+- **Busca em banco de alimentos** (SQLite), com cardápios pré-cadastrados.
+- **Ajuste proporcional das calorias do cardápio**, garantindo que a dieta final esteja próxima da meta energética.
+- **Interface amigável** com `Streamlit`.
+
+## 🧠 Lógica do Sistema
+
+### Lógica Fuzzy (SkFuzzy)
+
+A lógica fuzzy é usada para combinar:
+- `atividade_fisica` (sedentário a muito ativo)
+- `esforco` (leve a muito pesado)
+
+Resultado: **Intensidade agregada (0 a 10)**.
+
+### Algoritmo Determinístico para Recomendação da Dieta
+
+Usa esta função para combinar IMC e intensidade:
+
+```python
+def determinar_dieta(imc, intensidade):
+    if imc < 18.5:
+        return "hipercalorica"
+    elif imc < 25:
+        return "balanceada" if intensidade < 5 else "hipercalorica"
+    elif imc < 30:
+        return "hipocalorica" if intensidade < 5 else "balanceada"
+    else:
+        return "hipocalorica"
+```
+
+### 🌳 Árvore de Decisão
+
+Veja como os critérios são avaliados:
 
 ```
-Dieta_Fuzzy/
-│
+                                   [INÍCIO]
+                                      |
+                                     IMC
+        ┌─────────────────────────────┼─────────────────────────────┐
+        |                             |                             |
+   IMC < 18.5                   18.5 ≤ IMC < 25               25 ≤ IMC < 30                 IMC ≥ 30
+        |                             |                             |                        |
+ [HIPERCALÓRICA]                Intensidade                       Intensidade            [HIPOCALÓRICA]
+                                (0 a 10)                          (0 a 10)
+                          ┌──────────┴──────────┐            ┌──────────┴──────────┐
+                          |                     |            |                     |
+                   Intensidade < 5      Intensidade ≥ 5  Intensidade < 5    Intensidade ≥ 5
+                          |                     |            |                     |
+                   [BALANCEADA]          [HIPERCALÓRICA] [HIPOCALÓRICA]      [BALANCEADA]
+```
+
+## Mapa de Decisão
+graph TD
+    A[Início] --> B{IMC}
+
+    B --> B1[IMC < 18.5]
+    B --> B2[18.5 ≤ IMC < 25]
+    B --> B3[25 ≤ IMC < 30]
+    B --> B4[IMC ≥ 30]
+
+    B1 --> L1[[Dieta HIPERCALÓRICA]]
+
+    B2 --> C1{Intensidade < 5?}
+    C1 --> L2[[Dieta BALANCEADA]]
+    C1 --> L3[[Dieta HIPERCALÓRICA]]
+
+    B3 --> C2{Intensidade < 5?}
+    C2 --> L4[[Dieta HIPOCALÓRICA]]
+    C2 --> L5[[Dieta BALANCEADA]]
+
+    B4 --> L6[[Dieta HIPOCALÓRICA]]
+
+
+## ⚙️ Estrutura do Projeto
+
+```
+.
 ├── app/
-│   ├── fuzzy_engine.py
-│   ├── recommender.py
-│   ├── interface.py
-│   └── __init__.py
-│
+│   ├── fuzzy_engine.py      # Lógica fuzzy + lógica determinística
+│   ├── interface.py         # Interface Streamlit
+│   ├── recommender.py       # Consulta ao banco de alimentos
+│   ├── __init__.py
+│   └── create_db.py         # Script para criar e popular o banco
 ├── data/
-│   ├── alimentos.db
-│
-├── create_db.py
-├── main.py
-├── requirements.txt
-└── README.md
+│   └── alimentos.db         # Banco de alimentos SQLite
+├── main.py                  # Executa a aplicação Streamlit
+├── README.md                # Documentação do projeto
 ```
 
----
+## 💾 Banco de Dados
 
-# ⚙️ 1. Instalação das Dependências
+O banco `alimentos.db` armazena alimentos individuais classificados em:
+
+- Tipo de dieta
+- Refeição
+- Grupo (proteína, fruta, carboidrato, etc.)
+- Quantidade e calorias
+- Sugestões de substituições alimentares
+
+Você pode recriar o banco com:
+
+```bash
+python app/create_db.py
+```
+
+## 🧮 Ajuste Proporcional das Calorias
+
+A dieta carregada é ajustada proporcionalmente à meta energética calculada:
+
+```python
+fator = meta / total_dieta_fixa
+kcal_ajustado = int(kcal * fator)
+```
+
+Assim, todas as refeições mantêm seus alimentos originais, mas com porções calóricas ajustadas.
+
+## 🖥️ Rodando a Aplicação
+
+### Requisitos
+
+- Python 3.10+
+- Pip para instalar dependências
+
+### Instalação
 
 ```bash
 pip install -r requirements.txt
 ```
 
----
-
-# 🗃 2. Criando/Recriando o Banco de Dados
-
-```bash
-python create_db.py
-```
-
-Isso gera automaticamente:
-
-- `data/alimentos.db`
-- tabela `alimentos`
-- alimentos individuais populados corretamente
-
-Para verificar:
-
-```bash
-sqlite3 data/alimentos.db ".tables"
-```
-
----
-
-# ▶️ 3. Executando o Sistema
-
-Use:
+### Execução
 
 ```bash
 python main.py
 ```
 
-Isso executa o Streamlit automaticamente.
-
-Depois abra:
+Acesse no navegador:
 
 ```
 http://localhost:8501
 ```
 
----
+## 🔧 TODOs
 
-# 🧠 4. Funcionamento do Sistema Fuzzy
+- [ ] Adaptar receitas/capacidades calóricas dinâmicas
+- [ ] Adicionar novas fontes de dados nutricionais
+- [ ] Permitir exportar o cardápio ou plano alimentar em PDF ou CSV
 
-O sistema possui dois módulos:
-
----
-
-## 🔸 Sistema 1 — Atividade + Esforço (RPE) → Intensidade Agregada
-
-Variáveis fuzzy:
-
-- atividade_fisica ∈ {sedentário, pouco ativo, moderadamente ativo, muito ativo}
-- esforço ∈ {leve, moderado, pesado, muito pesado}
-
-Saída:
-
-- intensidade_nivel ∈ {baixa, moderada, alta, muito alta}
-
----
-
-## 🔸 Sistema 2 — IMC + Intensidade → Dieta Fuzzy
-
-Variáveis:
-
-- imc ∈ {muito baixo, baixo, normal, alto, muito alto}
-- intensidade_final ∈ {baixa, moderada, alta, muito alta}
-
-Saída:
-
-- dieta ∈ {hipocalórica, balanceada, hipercalórica}
-
----
-
-# 🔥 5. Classificação Final da Dieta
-
-```python
-tipo_dieta = (
-    "hipocalorica" if valor_fuzzy <= 3 else
-    "balanceada"   if valor_fuzzy <= 7 else
-    "hipercalorica"
-)
-```
-
----
-
-# 🔥 6. Cálculo da TMB (Harris–Benedict Atualizado)
-
-### **Homens**
-```
-TMB = 88.362 + (13.397×peso) + (4.799×altura_cm) – (5.677×idade)
-```
-
-### **Mulheres**
-```
-TMB = 447.593 + (9.247×peso) + (3.098×altura_cm) – (4.330×idade)
-```
-
----
-
-# 🔥 7. Meta Calórica Automática
-
-```
-hipocalórica  → TMB - 200
-balanceada    → TMB
-hipercalórica → TMB + 200
-```
-
----
-
-# 🍽 8. Recomendação de Alimentos
-
-O banco armazena alimentos **individuais**, incluindo:
-
-- refeição  
-- grupo  
-- alimento  
-- quantidade  
-- calorias  
-- substituições  
-- tipo_de_dieta  
-
-O cardápio exibido separa automaticamente por refeição.
-
----
-
-# 🔄 9. Atualizando o Banco
-
-Sempre que modificar alimentos, execute:
-
-```bash
-python create_db.py
-```
-
----
-
-# ❗ Problemas Comuns
-
-### **Erro: no such table: alimentos**
-
-Solução:
-
-- rodar `python create_db.py`
-- garantir que está na **raiz do projeto**
-- verificar `data/alimentos.db` criado
-
----
-
-# ✔ Projeto pronto para uso!

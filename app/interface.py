@@ -2,15 +2,14 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import numpy as np
 
-from app.fuzzy_engine import inferir_dieta, calcular_tmb, dieta
+from app.fuzzy_engine import inferir_dieta, calcular_tmb
 from app.recommender import recomendar_alimentos
-
 
 # ===============================
 # CONFIGURAÇÃO
 # ===============================
-st.set_page_config(page_title="Sistema Fuzzy de Dieta", layout="wide")
-st.title("🥗 Sistema Especialista Fuzzy para Recomendação de Dieta")
+st.set_page_config(page_title="Sistema Especialista de Dieta", layout="wide")
+st.title("🥗 Sistema Especialista com Fuzzy para Recomendação de Dieta")
 
 
 # ===============================
@@ -28,7 +27,7 @@ esforco = st.sidebar.slider(
     0, 10, 5
 )
 
-atividade = st.sidebar.selectbox(
+atividade_fisica = st.sidebar.selectbox(
     "Nível de atividade física diária",
     ["Sedentário", "Pouco ativo", "Moderadamente ativo", "Muito ativo"]
 )
@@ -39,19 +38,13 @@ atividade = st.sidebar.selectbox(
 # ===================================================
 if st.sidebar.button("🔍 Calcular Recomendação"):
 
-    # 1) Fuzzy
-    imc, categoria, intensidade_agregada, valor_fuzzy = inferir_dieta(
-        peso, altura, esforco, atividade
-    )
-
-    tipo_dieta = (
-        "hipocalorica" if valor_fuzzy <= 3 else
-        "balanceada"   if valor_fuzzy <= 7 else
-        "hipercalorica"
+    # 1) Fuzzy + regra simples
+    imc, categoria, intensidade, tipo_dieta = inferir_dieta(
+        peso, altura, esforco, atividade_fisica
     )
 
     # 2) TMB + meta
-    tmb = calcular_tmb(peso, altura, idade, sexo)
+    tmb = calcular_tmb(peso, altura, idade, sexo, atividade_fisica)
 
     meta = (
         tmb - 200 if tipo_dieta == "hipocalorica" else
@@ -62,6 +55,21 @@ if st.sidebar.button("🔍 Calcular Recomendação"):
     # 3) Banco de alimentos
     alimentos, total_dieta_fixa = recomendar_alimentos(tipo_dieta, meta)
 
+    # ===============================================
+    # AJUSTE PROPORCIONAL DA DIETA
+    # ===============================================
+    fator = meta / total_dieta_fixa if total_dieta_fixa != 0 else 1
+    st.info(f"Fator de ajuste aplicado: {fator:.2f}")
+
+    alimentos_ajustados = []
+    total_ajustado = 0
+
+    for refeicao, alimento, qtd, kcal, subs in alimentos:
+        kcal_ajustado = int(kcal * fator)
+        alimentos_ajustados.append((refeicao, alimento, qtd, kcal_ajustado, subs))
+        total_ajustado += kcal_ajustado
+
+    alimentos = alimentos_ajustados
 
     # ===============================================
     # PAINEL NUMÉRICO
@@ -75,46 +83,17 @@ if st.sidebar.button("🔍 Calcular Recomendação"):
         st.write(f"**Meta calórica:** {meta:.0f} kcal/dia")
 
     with col2:
-        st.write(f"**Intensidade agregada:** {intensidade_agregada:.2f}")
-        st.write(f"**Saída fuzzy (0–10):** {valor_fuzzy:.2f}")
+        st.write(f"**Intensidade agregada:** {intensidade:.2f}")
         st.success(f"**Dieta recomendada:** {tipo_dieta.upper()}")
-
-
-    # ===============================================
-    # GRÁFICO FUZZY
-    # ===============================================
-    st.write("### 📈 Funções de Pertinência – Dieta")
-
-    x = np.arange(0, 11, 1)
-    fig, ax = plt.subplots()
-
-    ax.plot(x, dieta['hipocalorica'].mf, label='Hipocalórica')
-    ax.plot(x, dieta['balanceada'].mf, label='Balanceada')
-    ax.plot(x, dieta['hipercalorica'].mf, label='Hipercalórica')
-
-    ax.axvline(valor_fuzzy, color='black', linestyle='--')
-    ax.set_xlabel("Nível da dieta")
-    ax.set_ylabel("Pertinência")
-    ax.legend()
-
-    st.pyplot(fig)
-
+        st.write(f"**Calorias originais:** {total_dieta_fixa} kcal")
+        st.write(f"**Calorias ajustadas:** {total_ajustado} kcal")
 
     # ===============================================
-    # CARDÁPIO — MODELO FINAL (A)
+    # CARDÁPIO — MODELO FINAL (AJUSTADO)
     # ===============================================
-    st.subheader("🍽️ Cardápio Sugerido (Alimentos Individuais)")
+    st.subheader("🍽️ Cardápio Ajustado Proporcionalmente")
 
-    refeicoes = [
-        "café da manhã",
-        "lanche da manhã",
-        "almoço",
-        "lanche da tarde",
-        "jantar",
-        "ceia"
-    ]
-
-    total_diario = 0
+    refeicoes = ["café da manhã", "lanche da manhã", "almoço", "lanche da tarde", "jantar", "ceia"]
 
     for ref in refeicoes:
         itens_ref = [i for i in alimentos if i[0] == ref]
@@ -123,10 +102,9 @@ if st.sidebar.button("🔍 Calcular Recomendação"):
             continue
 
         st.markdown(f"## 🍴 {ref.title()}")
-
         total_ref = 0
 
-        for r, alimento, qtd, kcal, subs in itens_ref:
+        for _, alimento, qtd, kcal, subs in itens_ref:
             total_ref += kcal
 
             st.markdown(f"**{alimento}** — {qtd} (**{kcal} kcal**)")
@@ -137,12 +115,11 @@ if st.sidebar.button("🔍 Calcular Recomendação"):
                     unsafe_allow_html=True
                 )
 
-        total_diario += total_ref
         st.markdown(f"### 🔥 Total da refeição: **{total_ref} kcal**")
         st.markdown("---")
 
-    # Total diário
-    st.markdown(f"# 🔥 Total diário sugerido: **{total_diario} kcal**")
+    # Total diário ajustado
+    st.markdown(f"# 🔥 Total diário ajustado: **{total_ajustado} kcal**")
 
 
 else:

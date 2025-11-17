@@ -16,7 +16,7 @@ os.makedirs(DATA_DIR, exist_ok=True)
 conn = sqlite3.connect(DB_PATH)
 cur = conn.cursor()
 
-print(f"📦 Criando banco em: {DB_PATH}")
+print(f"Criando banco em: {DB_PATH}")
 
 
 # ============================================
@@ -118,7 +118,7 @@ alimentos = [
 
 
     # =========================================================
-    # 💪 DIETA HIPERCALÓRICA
+    #  DIETA HIPERCALÓRICA
     # =========================================================
 
     # CAFÉ DA MANHÃ
@@ -150,7 +150,7 @@ alimentos = [
 
 
 # ============================================
-# 💾 Inserindo todos os alimentos
+#  Inserindo todos os alimentos
 # ============================================
 cur.executemany("""
 INSERT INTO alimentos (tipo_dieta, refeicao, grupo, alimento, quantidade, calorias, substituicoes)
@@ -160,4 +160,4 @@ VALUES (?, ?, ?, ?, ?, ?, ?)
 conn.commit()
 conn.close()
 
-print("✅ Banco criado e populado com sucesso!")
+print(" Banco criado e populado com sucesso!")
