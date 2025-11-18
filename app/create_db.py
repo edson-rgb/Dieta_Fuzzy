@@ -1,159 +1,145 @@
 import sqlite3
 import os
 
-# ======================================================
-#  Caminho correto para salvar o banco dentro de /data
-# ======================================================
-
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # raiz do projeto
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 DB_PATH = os.path.join(DATA_DIR, "alimentos.db")
 
-# Garante que a pasta data existe
 os.makedirs(DATA_DIR, exist_ok=True)
 
-# Conecta ao banco
 conn = sqlite3.connect(DB_PATH)
 cur = conn.cursor()
 
-print(f"Criando banco em: {DB_PATH}")
+print(f"📦 Criando banco em: {DB_PATH}")
 
-
-# ============================================
-#  Remove tabela antiga (se existir)
-# ============================================
 cur.execute("DROP TABLE IF EXISTS alimentos")
 
-
-# ============================================
-#  Cria nova tabela com estrutura final
-# ============================================
 cur.execute("""
 CREATE TABLE alimentos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     tipo_dieta TEXT NOT NULL,
     refeicao TEXT NOT NULL,
-    grupo TEXT NOT NULL,
     alimento TEXT NOT NULL,
-    quantidade TEXT NOT NULL,
-    calorias INTEGER NOT NULL,
+    quantidade REAL NOT NULL,
+    unidade TEXT NOT NULL,
+    calorias REAL NOT NULL,
     substituicoes TEXT
 )
 """)
 
-print(" Tabela 'alimentos' criada com sucesso.")
+print("Tabela criada.")
 
-
-# ============================================
-#  Lista de alimentos INDIVIDUAIS
-# ============================================
+################################################################################
+# LISTA DE ALIMENTOS 
+################################################################################
 
 alimentos = [
 
-    # =========================================================
-    #  DIETA HIPOCALÓRICA
-    # =========================================================
+    # --------------------------------------------------------------------------
+    # DIETA HIPOCALÓRICA
+    # --------------------------------------------------------------------------
 
     # CAFÉ DA MANHÃ
-    ('hipocalorica','café da manhã','proteína','Iogurte desnatado','170g',120,'OU kefir 120g OU 2 claras (60g)'),
-    ('hipocalorica','café da manhã','carboidrato','Tapioca simples','80g',100,'OU pão integral 30g'),
-    ('hipocalorica','café da manhã','fruta','Morango','100g',32,'OU maçã 100g'),
+    ("hipocalorica", "café da manhã", "Iogurte desnatado", 170, "g", 120, "iogurte natural 150g"),
+    ("hipocalorica", "café da manhã", "Tapioca", 80, "g", 100, "pão integral 30g"),
+    ("hipocalorica", "café da manhã", "Morango", 100, "g", 32, "maçã 100g"),
 
     # LANCHE DA MANHÃ
-    ('hipocalorica','lanche da manhã','fruta','Maçã','110g',60,'OU banana 90g'),
-    ('hipocalorica','lanche da manhã','oleaginosa','Castanha-do-Pará','6g',40,'OU castanha de caju 10g'),
+    ("hipocalorica", "lanche da manhã", "Maçã", 110, "g", 60, "banana 90g"),
+    ("hipocalorica", "lanche da manhã", "Castanha-do-Pará", 6, "g", 40, "castanha de caju 10g"),
 
     # ALMOÇO
-    ('hipocalorica','almoço','carboidrato','Arroz integral','100g',120,'OU purê de batata 100g'),
-    ('hipocalorica','almoço','leguminosa','Feijão carioca','80g',90,'OU lentilha 70g'),
-    ('hipocalorica','almoço','proteína','Frango grelhado','120g',200,'OU peixe branco 100g'),
-    ('hipocalorica','almoço','legume','Cenoura cozida','60g',25,'OU abobrinha 50g'),
-    ('hipocalorica','almoço','salada','Alface + tomate','80g',15,'OU rúcula 80g'),
+    ("hipocalorica", "almoço", "Arroz integral", 100, "g", 120, "purê de batata 100g"),
+    ("hipocalorica", "almoço", "Feijão carioca", 80, "g", 90, "lentilha 70g"),
+    ("hipocalorica", "almoço", "Frango grelhado", 120, "g", 200, "peixe branco 100g"),
+    ("hipocalorica", "almoço", "Cenoura cozida", 60, "g", 25, "abobrinha 50g"),
+    ("hipocalorica", "almoço", "Salada verde", 80, "g", 15, "rúcula 80g"),
 
     # LANCHE DA TARDE
-    ('hipocalorica','lanche da tarde','fruta','Banana','90g',85,'OU maçã 110g'),
-    ('hipocalorica','lanche da tarde','proteína','Iogurte natural','130g',70,'OU kefir 100g'),
+    ("hipocalorica", "lanche da tarde", "Banana", 90, "g", 85, "maçã 110g"),
+    ("hipocalorica", "lanche da tarde", "Iogurte natural", 130, "g", 70, "iogurte desnatado 100g"),
 
     # JANTAR
-    ('hipocalorica','jantar','proteína','Peixe assado','120g',150,'OU ovo cozido 50g'),
-    ('hipocalorica','jantar','carboidrato','Batata cozida','100g',90,'OU arroz integral 100g'),
-    ('hipocalorica','jantar','legume','Abobrinha','100g',20,'OU cenoura 80g'),
-    ('hipocalorica','jantar','salada','Salada verde','60g',12,'OU pepino 70g'),
+    ("hipocalorica", "jantar", "Peixe assado", 120, "g", 150, "ovo cozido 50g"),
+    ("hipocalorica", "jantar", "Batata cozida", 100, "g", 90, "arroz integral 100g"),
+    ("hipocalorica", "jantar", "Abobrinha", 100, "g", 20, "cenoura 80g"),
+    ("hipocalorica", "jantar", "Salada verde", 60, "g", 12, "pepino 70g"),
 
     # CEIA
-    ('hipocalorica','ceia','proteína','Claras de ovo','60g',34,'OU iogurte desnatado 100g'),
+    ("hipocalorica", "ceia", "Claras de ovo", 60, "g", 34, "iogurte desnatado 100g"),
 
-
-    # =========================================================
-    # ⚖️ DIETA BALANCEADA
-    # =========================================================
+    # --------------------------------------------------------------------------
+    # DIETA BALANCEADA
+    # --------------------------------------------------------------------------
 
     # CAFÉ DA MANHÃ
-    ('balanceada','café da manhã','carboidrato','Aveia','50g',190,'OU granola 40g'),
-    ('balanceada','café da manhã','fruta','Banana','100g',89,'OU maçã 110g'),
-    ('balanceada','café da manhã','proteína','Omelete','120g',200,'OU ovos cozidos 100g'),
+    ("balanceada", "café da manhã", "Aveia", 50, "g", 190, "granola 40g"),
+    ("balanceada", "café da manhã", "Banana", 100, "g", 89, "maçã 110g"),
+    ("balanceada", "café da manhã", "Ovos", 100, "g", 140, "omelete 120g"),
 
     # LANCHE DA MANHÃ
-    ('balanceada','lanche da manhã','fruta','Tangerina','100g',53,'OU laranja 120g'),
-    ('balanceada','lanche da manhã','oleaginosa','Castanhas','20g',120,'OU amendoim 20g'),
+    ("balanceada", "lanche da manhã", "Tangerina", 100, "g", 53, "laranja 120g"),
+    ("balanceada", "lanche da manhã", "Castanhas", 20, "g", 120, "amendoim 20g"),
 
     # ALMOÇO
-    ('balanceada','almoço','carboidrato','Arroz branco','150g',195,'OU macarrão 150g'),
-    ('balanceada','almoço','leguminosa','Feijão preto','100g',130,'OU grão de bico 80g'),
-    ('balanceada','almoço','proteína','Carne bovina magra','150g',250,'OU frango desfiado 150g'),
-    ('balanceada','almoço','legume','Couve cozida','40g',30,'OU brócolis 50g'),
-    ('balanceada','almoço','fruta','Abacaxi','100g',48,'OU melancia 120g'),
+    ("balanceada", "almoço", "Arroz branco", 150, "g", 195, "macarrão 150g"),
+    ("balanceada", "almoço", "Feijão preto", 100, "g", 130, "grão de bico 80g"),
+    ("balanceada", "almoço", "Carne bovina magra", 150, "g", 250, "frango 150g"),
+    ("balanceada", "almoço", "Couve cozida", 40, "g", 30, "brócolis 50g"),
+    ("balanceada", "almoço", "Abacaxi", 100, "g", 48, "melancia 120g"),
 
     # LANCHE DA TARDE
-    ('balanceada','lanche da tarde','carboidrato','Pão integral','50g',120,'OU tapioca 60g'),
-    ('balanceada','lanche da tarde','proteína','Iogurte com granola','180g',160,'OU leite com aveia 200ml'),
+    ("balanceada", "lanche da tarde", "Pão integral", 50, "g", 120, "tapioca 60g"),
+    ("balanceada", "lanche da tarde", "Iogurte com granola", 180, "g", 160, "leite com aveia 200ml"),
 
     # JANTAR
-    ('balanceada','jantar','proteína','Peixe grelhado','180g',240,'OU frango grelhado 180g'),
-    ('balanceada','jantar','carboidrato','Purê de batata','150g',150,'OU arroz 150g'),
-    ('balanceada','jantar','legume','Brócolis','80g',30,'OU cenoura 80g'),
+    ("balanceada", "jantar", "Peixe grelhado", 180, "g", 240, "frango 180g"),
+    ("balanceada", "jantar", "Purê de batata", 150, "g", 150, "arroz 150g"),
+    ("balanceada", "jantar", "Brócolis", 80, "g", 30, "cenoura 80g"),
 
     # CEIA
-    ('balanceada','ceia','vitamina','Vitamina de banana','250ml',180,'OU leite com cacau 250ml'),
+    ("balanceada", "ceia", "Leite com cacau", 250, "ml", 180, "vitamina 250ml"),
 
-
-    # =========================================================
-    #  DIETA HIPERCALÓRICA
-    # =========================================================
+    # --------------------------------------------------------------------------
+    # DIETA HIPERCALÓRICA
+    # --------------------------------------------------------------------------
 
     # CAFÉ DA MANHÃ
-    ('hipercalorica','café da manhã','carboidrato','Pão com pasta de amendoim','120g',400,'OU pão + manteiga 100g'),
-    ('hipercalorica','café da manhã','vitamina','Vitamina de abacate','300ml',450,'OU shake banana + aveia 300ml'),
+    ("hipercalorica", "café da manhã", "Pão francês", 60, "g", 160, "pão integral 60g"),
+    ("hipercalorica", "café da manhã", "Pasta de amendoim", 30, "g", 180, "pasta de castanha 30g"),
+    ("hipercalorica", "café da manhã", "Abacate", 100, "g", 160, "banana 100g"),
 
     # LANCHE DA MANHÃ
-    ('hipercalorica','lanche da manhã','carboidrato','Batata doce cozida','130g',110,'OU banana 120g'),
-    ('hipercalorica','lanche da manhã','proteína','Ovos mexidos','120g',180,'OU omelete 150g'),
+    ("hipercalorica", "lanche da manhã", "Batata doce", 130, "g", 110, "banana 120g"),
+    ("hipercalorica", "lanche da manhã", "Ovos mexidos", 120, "g", 180, "omelete 120g"),
 
     # ALMOÇO
-    ('hipercalorica','almoço','carboidrato','Arroz branco','200g',260,'OU macarrão 200g'),
-    ('hipercalorica','almoço','proteína','Carne moída','180g',320,'OU frango ao molho 200g'),
-    ('hipercalorica','almoço','leguminosa','Feijão','120g',160,'OU lentilha 120g'),
-    ('hipercalorica','almoço','legume','Batata inglesa','150g',130,'OU mandioca 150g'),
+    ("hipercalorica", "almoço", "Arroz branco", 200, "g", 260, "macarrão 200g"),
+    ("hipercalorica", "almoço", "Carne moída", 180, "g", 320, "frango ao molho 200g"),
+    ("hipercalorica", "almoço", "Feijão", 120, "g", 160, "lentilha 120g"),
+    ("hipercalorica", "almoço", "Batata inglesa", 150, "g", 130, "mandioca 150g"),
 
     # LANCHE DA TARDE
-    ('hipercalorica','lanche da tarde','shake','Whey + aveia','300ml',420,'OU vitamina banana + pasta 300ml'),
-    ('hipercalorica','lanche da tarde','oleaginosa','Amendoim torrado','30g',170,'OU castanhas 25g'),
+    ("hipercalorica", "lanche da tarde", "Whey", 30, "g", 120, "leite 200ml"),
+    ("hipercalorica", "lanche da tarde", "Aveia", 50, "g", 190, "granola 40g"),
+    ("hipercalorica", "lanche da tarde", "Banana", 120, "g", 110, "maçã 120g"),
 
     # JANTAR
-    ('hipercalorica','jantar','carboidrato','Macarrão ao molho branco','300g',450,'OU lasanha 250g'),
-    ('hipercalorica','jantar','proteína','Frango grelhado','200g',300,'OU peixe assado 200g'),
-    ('hipercalorica','jantar','legume','Brócolis cozido','100g',35,'OU cenoura 100g'),
+    ("hipercalorica", "jantar", "Macarrão ao molho branco", 300, "g", 450, "lasanha 250g"),
+    ("hipercalorica", "jantar", "Frango grelhado", 200, "g", 300, "peixe assado 200g"),
+    ("hipercalorica", "jantar", "Brócolis cozido", 100, "g", 35, "cenoura 100g"),
 
     # CEIA
-    ('hipercalorica','ceia','vitamina','Shake hipercalórico','350ml',500,'OU shake caseiro 350ml')
+    ("hipercalorica", "ceia", "Leite integral", 300, "ml", 190, "leite desnatado 300ml"),
+    ("hipercalorica", "ceia", "Aveia", 40, "g", 150, "granola 40g"),
 ]
 
+################################################################################
+# INSERÇÃO NO BANCO
+################################################################################
 
-# ============================================
-#  Inserindo todos os alimentos
-# ============================================
 cur.executemany("""
-INSERT INTO alimentos (tipo_dieta, refeicao, grupo, alimento, quantidade, calorias, substituicoes)
+INSERT INTO alimentos (tipo_dieta, refeicao, alimento, quantidade, unidade, calorias, substituicoes)
 VALUES (?, ?, ?, ?, ?, ?, ?)
 """, alimentos)
 

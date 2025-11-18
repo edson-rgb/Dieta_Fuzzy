@@ -8,10 +8,7 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import numpy as np
 
-
-
-
-from app.fuzzy_engine import inferir_dieta, calcular_tmb
+from app.fuzzy_engine import inferir_dieta, calcular_tmb 
 from app.recommender import recomendar_alimentos
 
 # ===============================
@@ -65,7 +62,7 @@ if st.sidebar.button("🔍 Calcular Recomendação"):
     alimentos, total_dieta_fixa = recomendar_alimentos(tipo_dieta, meta)
 
     # ===============================================
-    # AJUSTE PROPORCIONAL DA DIETA
+    # AJUSTE PROPORCIONAL DA DIETA (KCAL + QUANTIDADE)
     # ===============================================
     fator = meta / total_dieta_fixa if total_dieta_fixa != 0 else 1
     st.info(f"Fator de ajuste aplicado: {fator:.2f}")
@@ -74,8 +71,25 @@ if st.sidebar.button("🔍 Calcular Recomendação"):
     total_ajustado = 0
 
     for refeicao, alimento, qtd, kcal, subs in alimentos:
+
+        # Ajuste de calorias
         kcal_ajustado = int(kcal * fator)
-        alimentos_ajustados.append((refeicao, alimento, qtd, kcal_ajustado, subs))
+
+        # Ajuste de quantidade: número vindo do banco
+        qtd_num = int(qtd)  # banco já contém número puro
+        qtd_ajustada = int(qtd_num * fator)
+
+        # Guarda tudo (qtd convertida p/ string "xg")
+        alimentos_ajustados.append(
+            (
+                refeicao,
+                alimento,
+                f"{qtd_ajustada}g",   # exibição no cardápio
+                kcal_ajustado,
+                subs
+            )
+        )
+
         total_ajustado += kcal_ajustado
 
     alimentos = alimentos_ajustados
@@ -98,7 +112,7 @@ if st.sidebar.button("🔍 Calcular Recomendação"):
         st.write(f"**Calorias ajustadas:** {total_ajustado} kcal")
 
     # ===============================================
-    # CARDÁPIO — MODELO FINAL (AJUSTADO)
+    # CARDÁPIO FINAL AJUSTADO
     # ===============================================
     st.subheader("🍽️ Cardápio Ajustado Proporcionalmente")
 

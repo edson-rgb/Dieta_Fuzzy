@@ -10,12 +10,12 @@ Este projeto implementa um **sistema especialista híbrido** para recomendação
 - **Lógica Fuzzy** para interpretar a intensidade do estilo de vida com base em:
   - Nível de atividade física
   - Esforço percebido (RPE)
-- **Algoritmo de decisão determinístico** para recomendar o tipo de dieta (hipocalórica, balanceada ou hipercalórica), com base em:
+- **Algoritmo de busca simples** para recomendar o tipo de dieta (hipocalórica, balanceada ou hipercalórica), com base em:
   - IMC
   - Intensidade fuzzy
 - **Cálculo da TMB** (Taxa Metabólica Basal), ajustado pelo fator de atividade.
 - **Busca em banco de alimentos** (SQLite), com cardápios pré-cadastrados.
-- **Ajuste proporcional das calorias do cardápio**, garantindo que a dieta final esteja próxima da meta energética.
+- **Ajuste proporcional das calorias e quantidades do cardápio**, garantindo que a dieta final esteja próxima da meta energética.
 - **Interface amigável** com `Streamlit`.
 
 ## 🧠 Lógica do Sistema
@@ -28,7 +28,7 @@ A lógica fuzzy é usada para combinar:
 
 Resultado: **Intensidade agregada (0 a 10)**.
 
-### Algoritmo Determinístico para Recomendação da Dieta
+### Algoritmo de busca para Recomendação da Dieta
 
 Usa esta função para combinar IMC e intensidade:
 
@@ -49,21 +49,24 @@ def determinar_dieta(imc, intensidade):
 Veja como os critérios são avaliados:
 
 ```
-                                   [INÍCIO]
-                                      |
-                                     IMC
-        ┌─────────────────────────────┼─────────────────────────────┐
-        |                             |                             |
-   IMC < 18.5                   18.5 ≤ IMC < 25               25 ≤ IMC < 30                 IMC ≥ 30
-        |                             |                             |                        |
- [HIPERCALÓRICA]                Intensidade                       Intensidade            [HIPOCALÓRICA]
-                                (0 a 10)                          (0 a 10)
-                          ┌──────────┴──────────┐            ┌──────────┴──────────┐
-                          |                     |            |                     |
-                   Intensidade < 5      Intensidade ≥ 5  Intensidade < 5    Intensidade ≥ 5
-                          |                     |            |                     |
-                   [BALANCEADA]          [HIPERCALÓRICA] [HIPOCALÓRICA]      [BALANCEADA]
-```
+                                      [INÍCIO]
+                                          |
+                                         IMC
+                                          |
+    ──────────────────────────────────────────────────────────────────────────────
+    |                               |                            |               |
+IMC < 18.5               18.5 ≤ IMC < 25                 25 ≤ IMC < 30        IMC ≥ 30
+    |                               |                            |               |
+[HIPERCALÓRICA]                Intensidade                  Intensidade      [HIPOCALÓRICA]
+                               (0 a 10)                     (0 a 10)
+                                   |                            |
+                       ────────────────────          ─────────────────────
+                       |                 |            |                 |
+             Intensidade < 5   Intensidade ≥ 5   Intensidade < 5   Intensidade ≥ 5
+                       |                 |            |                 |
+                [BALANCEADA]   [HIPERCALÓRICA]   [HIPOCALÓRICA]     [BALANCEADA]
+
+
 
 ## Mapa de Decisão
 graph TD
@@ -110,7 +113,9 @@ O banco `alimentos.db` armazena alimentos individuais classificados em:
 - Tipo de dieta
 - Refeição
 - Grupo (proteína, fruta, carboidrato, etc.)
-- Quantidade e calorias
+- Quantidade
+- Calorias
+- unidade
 - Sugestões de substituições alimentares
 
 Você pode recriar o banco com:
@@ -126,9 +131,10 @@ A dieta carregada é ajustada proporcionalmente à meta energética calculada:
 ```python
 fator = meta / total_dieta_fixa
 kcal_ajustado = int(kcal * fator)
+quantidade_ajustado = int(quantidade * fator)
 ```
 
-Assim, todas as refeições mantêm seus alimentos originais, mas com porções calóricas ajustadas.
+Assim, todas as refeições mantêm seus alimentos originais, mas com porções calóricas e qunatidades ajustadas.
 
 ## 🖥️ Rodando a Aplicação
 
@@ -154,10 +160,4 @@ Acesse no navegador:
 ```
 http://localhost:8501
 ```
-
-## 🔧 TODOs
-
-- [ ] Adaptar receitas/capacidades calóricas dinâmicas
-- [ ] Adicionar novas fontes de dados nutricionais
-- [ ] Permitir exportar o cardápio ou plano alimentar em PDF ou CSV
 
