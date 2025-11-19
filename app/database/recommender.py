@@ -1,15 +1,14 @@
-# app/recommender.py
 import sqlite3
 import os
 
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # .../app
 DB_PATH = os.path.join(BASE_DIR, "data", "alimentos.db")
 
 
 def recomendar_alimentos(tipo_dieta: str, meta_calorias: int):
     """
     Retorna alimentos individuais agrupados por refeição,
-    filtrados pelo tipo de dieta E classificados pelo total de calorias.
+    filtrados pelo tipo de dieta.
     """
 
     conn = sqlite3.connect(DB_PATH)
@@ -25,7 +24,6 @@ def recomendar_alimentos(tipo_dieta: str, meta_calorias: int):
     rows = cur.fetchall()
     conn.close()
 
-    # Cada item já é um alimento individual
     resultado = []
     total_kcal = 0
 
