@@ -4,4 +4,4 @@ matplotlib
 scikit-fuzzy
 scipy
 networkx
-skfuzzy
+
