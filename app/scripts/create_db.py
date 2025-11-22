@@ -10,7 +10,7 @@ os.makedirs(DATA_DIR, exist_ok=True)
 conn = sqlite3.connect(DB_PATH)
 cur = conn.cursor()
 
-print(f"📦 Criando banco em: {DB_PATH}")
+print(f"Criando banco em: {DB_PATH}")
 
 cur.execute("DROP TABLE IF EXISTS alimentos")
 
@@ -29,9 +29,7 @@ CREATE TABLE alimentos (
 
 print("Tabela criada.")
 
-################################################################################
-# LISTA DE ALIMENTOS 
-################################################################################
+
 
 alimentos = [
 
@@ -134,9 +132,8 @@ alimentos = [
     ("hipercalorica", "ceia", "Aveia", 40, "g", 150, "granola 40g"),
 ]
 
-################################################################################
+
 # INSERÇÃO NO BANCO
-################################################################################
 
 cur.executemany("""
 INSERT INTO alimentos (tipo_dieta, refeicao, alimento, quantidade, unidade, calorias, substituicoes)

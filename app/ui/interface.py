@@ -92,8 +92,6 @@ if st.sidebar.button("🔍 Calcular Recomendação"):
     with col2:
         st.success(f"**Dieta recomendada:** {tipo_dieta.upper()}")
         st.write(f"**Estado BFS escolhido:** {estado_bfs}")
-        st.write(f"**Calorias originais:** {total_dieta_fixa} kcal")
-        st.write(f"**Calorias ajustadas:** {total_ajustado} kcal")
 
     st.subheader("🍽️ Cardápio Ajustado")
 
