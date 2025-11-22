@@ -1,13 +1,10 @@
-# app/src/fuzzy_engine.py
-
 import numpy as np
 import skfuzzy as fuzz
 from skfuzzy import control as ctrl
 
 
-# ===========================================
+
 # VARIÁVEIS FUZZY
-# ===========================================
 
 atividade = ctrl.Antecedent(np.arange(0, 11, 1), 'atividade')
 esforco = ctrl.Antecedent(np.arange(0, 11, 1), 'esforco')
@@ -31,9 +28,8 @@ intensidade_nivel['muito_alta'] = fuzz.trimf(intensidade_nivel.universe, [8, 10,
 
 
 
-# ===========================================
-# REGRAS FUZZY (Matriz completa)
-# ===========================================
+
+# REGRAS FUZZY DE INTENSIDADE
 
 regras = [
     # Sedentário
@@ -66,9 +62,9 @@ sistema_intensidade = ctrl.ControlSystem(regras)
 simulador = ctrl.ControlSystemSimulation(sistema_intensidade)
 
 
-# ===========================================
+
 # FUNÇÃO PRINCIPAL
-# ===========================================
+
 
 def calcular_intensidade_fuzzy(atividade_texto: str, esforco_rpe: float):
     mapa = {

@@ -1,7 +1,3 @@
-# ===========================================
-# CLASSIFICAÇÃO DA INTENSIDADE CRISP
-# ===========================================
-
 def classificar_intensidade_categoria(intensidade: float) -> str:
     """
     Converte o valor fuzzy (0–10) em categoria linguística.
@@ -14,9 +10,8 @@ def classificar_intensidade_categoria(intensidade: float) -> str:
         return "alta"
 
 
-# ===========================================
+
 # REGRAS DO SISTEMA ESPECIALISTA
-# ===========================================
 
 regras_dieta = [
     {"imc": "baixo",      "intensidade": "baixa",     "dieta": "hipercalorica"},

@@ -11,17 +11,13 @@ from app.src.tmb import calcular_tmb
 from app.database.recommender import recomendar_alimentos
 
 
-# ================================================
-# CONFIGURAÇÃO
-# ================================================
+
 
 st.set_page_config(page_title="Sistema Especialista de Dieta", layout="wide")
 st.title("🥗 Sistema Especialista com Fuzzy + BFS para Recomendação de Dieta")
 
 
-# ================================================
-# ENTRADAS
-# ================================================
+
 
 st.sidebar.header("⚙️ Entradas do Usuário")
 
@@ -38,9 +34,7 @@ atividade_fisica = st.sidebar.selectbox(
 )
 
 
-# ================================================
-# PROCESSAMENTO
-# ================================================
+
 
 if st.sidebar.button("🔍 Calcular Recomendação"):
 
@@ -53,7 +47,7 @@ if st.sidebar.button("🔍 Calcular Recomendação"):
     tipo_dieta = resultado["dieta"]
     estado_bfs = resultado["estado_usado"]
 
-    # TMB
+    
     tmb = calcular_tmb(peso, altura, idade, sexo, atividade_fisica)
 
     # Ajuste calórico
@@ -83,10 +77,9 @@ if st.sidebar.button("🔍 Calcular Recomendação"):
         total_ajustado += kcal_ajustado
 
 
-    # ================================================
-    # EXIBIÇÃO DOS RESULTADOS
-    # ================================================
-
+    
+    
+    
     st.subheader("📊 Resultado da Análise")
 
     col1, col2 = st.columns(2)

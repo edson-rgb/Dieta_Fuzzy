@@ -1,8 +1,5 @@
+#Calcula a TMB usando Mifflin-St Jeor e aplica o fator de atividade.
 def calcular_tmb(peso: float, altura: float, idade: int, sexo: str, atividade_fisica: str) -> float:
-    """
-    Calcula a TMB usando Mifflin-St Jeor e aplica o fator de atividade.
-    altura em metros.
-    """
     altura_cm = altura * 100
 
     if sexo == "Masculino":

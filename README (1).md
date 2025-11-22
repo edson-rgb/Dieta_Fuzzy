@@ -48,7 +48,7 @@ Cada regra representa conhecimento humano de um nutricionista.
 
 ## **3️⃣ BFS – Busca da regra mais próxima**
 
-Caso o estado `(imc_cat, intensidade_cat)` não tenha regra exata (ex.: intensidade muito-limítrofe), a BFS é usada para navegar em um grafo IMC × Intensidade até encontrar a regra mais próxima semântica e nutricionalmente.
+Caso o estado `(imc_cat, intensidade_cat)` não tenha regra exata, a BFS é usada para navegar em um grafo IMC × Intensidade até encontrar a regra mais próxima semântica e nutricionalmente.
 
 A BFS garante:
 
@@ -161,12 +161,12 @@ app/
 
 # 🔬 Tecnologias Utilizadas
 
-- Python 3.x  
+- Python 3.10  
 - scikit-fuzzy  
 - Streamlit  
 - SQLite  
 - BFS (collections.deque)  
-- NumPy  
+
 
 ---
 
@@ -187,9 +187,3 @@ Este sistema combina três técnicas de IA complementares:
 - a **lógica fuzzy** trata da incerteza  
 - o **sistema especialista** fornece conhecimento humano formalizado  
 - o **BFS** garante robustez e tomada de decisão mesmo em estados não conhecidos
-
-
-
-
-
-
