@@ -80,8 +80,13 @@ def calcular_intensidade_fuzzy(atividade_texto: str, esforco_rpe: float):
 
     valor = float(simulador.output['intensidade_nivel'])
 
-    if valor < 3.5: categoria = "baixa"
-    elif valor < 6.5: categoria = "moderada"
-    else: categoria = "alta"
+    if valor < 3:
+        categoria = "baixa"
+    elif valor < 6:
+        categoria = "moderada"
+    elif valor < 8:
+        categoria = "alta"
+    else:
+        categoria = "muito_alta"
 
     return valor, categoria
